@@ -4,6 +4,8 @@ from .config import get_config
 from .extensions import mongo, jwt, ma, logger
 from .auth import auth_bp
 from app.users.routes import users_bp
+from flasgger import Swagger
+from app.library import library_bp
 
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
@@ -22,7 +24,9 @@ def create_app():
     jwt.init_app(app)
     ma.init_app(app)
     logger.init_app(app)
+    Swagger(app)
     # Register blueprints
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(users_bp)
+    app.register_blueprint(library_bp)
     return app 

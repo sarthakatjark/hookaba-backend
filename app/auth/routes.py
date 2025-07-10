@@ -6,6 +6,28 @@ from app.extensions import logger
 
 @auth_bp.route('/request-otp', methods=['POST'])
 def request_otp_route():
+    """
+    Request OTP for phone number
+    ---
+    tags:
+      - Auth
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - phone
+          properties:
+            phone:
+              type: string
+    responses:
+      200:
+        description: OTP sent successfully
+      400:
+        description: Validation error
+    """
     data = request.get_json()
     errors = RequestOTPSchema().validate(data)
     if errors:
@@ -17,6 +39,31 @@ def request_otp_route():
 
 @auth_bp.route('/verify-otp', methods=['POST'])
 def verify_otp_route():
+    """
+    Verify OTP for phone number
+    ---
+    tags:
+      - Auth
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - phone
+            - otp
+          properties:
+            phone:
+              type: string
+            otp:
+              type: string
+    responses:
+      200:
+        description: OTP verified successfully
+      400:
+        description: Validation error
+    """
     data = request.get_json()
     errors = VerifyOTPSchema().validate(data)
     if errors:
