@@ -1,0 +1,16 @@
+# Ignore environment variable files
+.env
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+
+# macOS system files
+.DS_Store
+
+# Other common ignores
+*.log 
