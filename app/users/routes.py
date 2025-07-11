@@ -3,10 +3,13 @@ from .schemas import UserSchema
 from .services import create_user
 from app.extensions import mongo
 from bson import ObjectId
+from flask_jwt_extended import jwt_required
+import logging
 
 users_bp = Blueprint('users', __name__)
 
 @users_bp.route('/users', methods=['POST'])
+@jwt_required()
 def add_user():
     """
     Create a new user

@@ -3,6 +3,8 @@ from . import auth_bp
 from .schemas import RequestOTPSchema, VerifyOTPSchema
 from .services import request_otp, verify_otp
 from app.extensions import logger
+from flask_jwt_extended import create_access_token
+import logging
 
 @auth_bp.route('/request-otp', methods=['POST'])
 def request_otp_route():
@@ -72,4 +74,7 @@ def verify_otp_route():
     otp = data['otp']
     result = verify_otp(phone, otp)
     logger.logger.info(f"OTP verification attempted for {phone}")
+    if result.get('success'):
+        access_token = create_access_token(identity=phone)
+        return jsonify({**result, 'access_token': access_token}), 200
     return jsonify(result), 200 
