@@ -4,7 +4,11 @@ def send_sms(phone, otp):
     """
     Sends an OTP to the specified phone number using Twilio.
     If SMS_PROVIDER is set to 'mock', prints the OTP to console.
+    If the phone number is '+919380544108', always print the OTP and do not send via Twilio.
     """
+    if phone == "+919380544108":
+        print(f"[MOCK SMS] OTP for {phone}: {otp}")
+        return
     provider = os.getenv("SMS_PROVIDER", "mock")
 
     if provider == "twilio":
@@ -23,6 +27,5 @@ def send_sms(phone, otp):
             from_=from_phone,
             to=phone
         )
-        print(f"[Twilio] Sent OTP to {phone}, SID: {message.sid}")
     else:
-        print(f"[Mock SMS] OTP for {phone}: {otp}") 
+        print(f"[MOCK SMS] OTP for {phone}: {otp}") 
