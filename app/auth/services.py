@@ -10,7 +10,11 @@ OTP_COLLECTION = 'otps'
 def request_otp(phone):
     otp = generate_otp()
     expiry = datetime.datetime.now(datetime.UTC) + datetime.timedelta(seconds=current_app.config['OTP_EXPIRY_SECONDS'])
-    print("mongo.db:", mongo.db)
+    mongo.db[OTP_COLLECTION].update_one(
+        {'phone': phone},
+        {'$set': {'otp': otp, 'expires_at': expiry}},
+        upsert=True
+    )
     send_sms(phone, otp)
     return {'message': 'OTP sent'}
 
