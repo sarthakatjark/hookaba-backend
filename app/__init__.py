@@ -13,12 +13,12 @@ def create_app():
     if os.path.exists('.env'):
         from dotenv import load_dotenv
         load_dotenv()
-    print('MONGO_URI from env:', os.environ.get('MONGO_URI'))
+    #print('MONGO_URI from env:', os.environ.get('MONGO_URI'))
     # Load default config
     app.config.from_object(get_config())
     # Load instance config if exists
     app.config.from_pyfile('config.py', silent=True)
-    print('MONGO_URI from app.config:', app.config.get('MONGO_URI'))
+    #print('MONGO_URI from app.config:', app.config.get('MONGO_URI'))
     # Initialize extensions
     mongo.init_app(app)
     jwt.init_app(app)
