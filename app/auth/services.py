@@ -19,8 +19,6 @@ def request_otp(phone):
     return {'message': 'OTP sent'}
 
 def verify_otp(phone, otp):
-    if phone == "+919380544108":
-        return {'success': True, 'message': 'OTP verified (bypass for test number)'}
     record = mongo.db[OTP_COLLECTION].find_one({'phone': phone})
     if not record:
         return {'success': False, 'message': 'OTP not found'}
