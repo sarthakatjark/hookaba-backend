@@ -24,6 +24,8 @@ def request_otp_route():
           properties:
             phone:
               type: string
+            platform:
+              type: string
     responses:
       200:
         description: OTP sent successfully
@@ -35,7 +37,8 @@ def request_otp_route():
     if errors:
         return jsonify({'errors': errors}), 400
     phone = data['phone']
-    result = request_otp(phone)
+    platform = data.get('platform', None)
+    result = request_otp(phone, platform=platform)
     logger.logger.info(f"OTP requested for {phone}")
     return jsonify(result), 200
 
