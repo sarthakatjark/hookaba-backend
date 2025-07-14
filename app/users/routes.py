@@ -5,6 +5,7 @@ from app.extensions import mongo
 from bson import ObjectId
 from flask_jwt_extended import jwt_required
 import logging
+from bson.objectid import ObjectId, InvalidId
 
 users_bp = Blueprint('users', __name__)
 
@@ -53,7 +54,11 @@ def add_user():
 
 @users_bp.route('/users/<user_id>', methods=['GET'])
 def get_user(user_id):
-    user = mongo.db.users.find_one({"_id": ObjectId(user_id)})
+    try:
+        obj_id = ObjectId(user_id)
+    except (InvalidId, TypeError):
+        return jsonify({'error': 'Invalid user id'}), 400
+    user = mongo.db.users.find_one({"_id": obj_id})
     if not user:
         return jsonify({"error": "User not found"}), 404
     user["_id"] = str(user["_id"])
