@@ -4,6 +4,7 @@ from app.extensions import mongo
 from app.common.sms import send_sms
 from app.common.utils import generate_otp
 from flask import current_app
+import datetime
 
 OTP_COLLECTION = 'otps'
 
@@ -24,7 +25,10 @@ def verify_otp(phone, otp):
         return {'success': False, 'message': 'OTP not found'}
     if record['otp'] != otp:
         return {'success': False, 'message': 'Invalid OTP'}
-    if datetime.datetime.now(datetime.UTC) > record['expires_at']:
+    expires_at = record['expires_at']
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=datetime.timezone.utc)
+    if datetime.datetime.now(datetime.timezone.utc) > expires_at:
         return {'success': False, 'message': 'OTP expired'}
     # Optionally, delete OTP after successful verification
     mongo.db[OTP_COLLECTION].delete_one({'phone': phone})
