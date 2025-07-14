@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret')
@@ -6,6 +7,7 @@ class Config:
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'jwt-secret')
     OTP_EXPIRY_SECONDS = 300  # 5 minutes
     DEBUG = False
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=3650)  # 10 years
 
 class DevelopmentConfig(Config):
     DEBUG = True
