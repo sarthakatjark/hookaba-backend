@@ -1,7 +1,8 @@
 from marshmallow import Schema, fields
 
 class RequestOTPSchema(Schema):
-    phone = fields.Str(required=True)
+    phone = fields.String(required=True)
+    platform = fields.String(required=False)
 
 class VerifyOTPSchema(Schema):
     phone = fields.Str(required=True)
