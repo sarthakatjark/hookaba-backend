@@ -53,6 +53,19 @@ def compress_gif(file_stream, max_size=(64, 64), colors=256, frame_skip=2):
         logging.exception("Failed to compress GIF")
         return None
 
+def compress_image(file_stream, max_size=(64, 64), quality=85):
+    try:
+        im = Image.open(file_stream)
+        im = im.convert('RGB')  # Ensure JPEG compatibility
+        im = im.resize(max_size, Image.Resampling.LANCZOS)
+        output = io.BytesIO()
+        im.save(output, format='JPEG', quality=quality, optimize=True)
+        output.seek(0)
+        return output
+    except Exception as e:
+        logging.exception("Failed to compress image")
+        return None
+
 @library_bp.route('/library/upload', methods=['POST'])
 @jwt_required()
 def upload_file():
@@ -106,11 +119,16 @@ def upload_file():
         if not category:
             return jsonify({"error": "Missing category"}), 400
         filename = secure_filename(file.filename)
-        # --- GIF compression logic ---
+        # --- GIF/image compression logic ---
         if file_type == 'gif':
             compressed = compress_gif(file.stream)
             if compressed is None:
                 return jsonify({"error": "GIF compression failed"}), 500
+            upload_stream = compressed
+        elif file_type == 'image':
+            compressed = compress_image(file.stream)
+            if compressed is None:
+                return jsonify({"error": "Image compression failed"}), 500
             upload_stream = compressed
         else:
             upload_stream = file.stream
