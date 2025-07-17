@@ -24,7 +24,7 @@ def compress_gif(file_stream, max_size=(64, 64), colors=64):
         for frame in reader:
             im = Image.fromarray(frame)
             im = im.convert('P', palette=Image.ADAPTIVE, colors=colors)
-            im = im.resize(max_size, Image.ANTIALIAS)
+            im = im.resize(max_size, Image.Resampling.LANCZOS)
             frames.append(im)
         output = io.BytesIO()
         frames[0].save(
