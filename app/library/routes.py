@@ -7,12 +7,40 @@ from .services import add_library_item
 from .schemas import LibraryItemSchema
 from flask_jwt_extended import jwt_required
 import logging
+import imageio
+from PIL import Image
+import io
 
 # S3 config (set these in your environment or config)
 S3_BUCKET = os.environ.get("S3_BUCKET")
 S3_REGION = os.environ.get("S3_REGION", "us-east-1")
 
 s3 = boto3.client("s3")
+
+def compress_gif(file_stream, max_size=(64, 64), colors=64):
+    try:
+        reader = imageio.get_reader(file_stream, format='gif')
+        frames = []
+        for frame in reader:
+            im = Image.fromarray(frame)
+            im = im.convert('P', palette=Image.ADAPTIVE, colors=colors)
+            im = im.resize(max_size, Image.ANTIALIAS)
+            frames.append(im)
+        output = io.BytesIO()
+        frames[0].save(
+            output,
+            format='GIF',
+            save_all=True,
+            append_images=frames[1:],
+            optimize=True,
+            loop=0,
+            duration=reader.get_meta_data().get('duration', 100)
+        )
+        output.seek(0)
+        return output
+    except Exception as e:
+        logging.exception("Failed to compress GIF")
+        return None
 
 @library_bp.route('/library/upload', methods=['POST'])
 @jwt_required()
@@ -67,9 +95,17 @@ def upload_file():
         if not category:
             return jsonify({"error": "Missing category"}), 400
         filename = secure_filename(file.filename)
+        # --- GIF compression logic ---
+        if file_type == 'gif':
+            compressed = compress_gif(file.stream)
+            if compressed is None:
+                return jsonify({"error": "GIF compression failed"}), 500
+            upload_stream = compressed
+        else:
+            upload_stream = file.stream
         try:
             s3.upload_fileobj(
-                file,
+                upload_stream,
                 S3_BUCKET,
                 filename,
                 ExtraArgs={'ContentType': file.content_type}
