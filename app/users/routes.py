@@ -43,14 +43,15 @@ def add_user():
     errors = UserSchema().validate(data)
     if errors:
         return jsonify({"errors": errors}), 400
-    user_id = create_user(data['username'], data['number'])
+    admin = data.get('admin', False)
+    user_id = create_user(data['username'], data['number'], admin)
     if user_id == "number":
         return jsonify({"error": "Phone number already in use"}), 409
     if user_id == "username":
         return jsonify({"error": "Username already in use"}), 409
     if user_id is None:
         return jsonify({"error": "User creation failed"}), 500
-    return jsonify({"message": "User created", "user_id": user_id}), 201
+    return jsonify({"message": "User created", "user_id": user_id, "admin": admin}), 201
 
 @users_bp.route('/users/<user_id>', methods=['GET'])
 def get_user(user_id):

@@ -3,10 +3,12 @@ from datetime import datetime, timezone
 
 LIBRARY_COLLECTION = "library"
 
-def add_library_item(url, user_id):
+def add_library_item(url, user_id, file_type, category):
     item = {
         "url": url,
         "user_id": user_id,
+        "type": file_type,
+        "category": category,
         "created_at": datetime.now(timezone.utc)
     }
     result = mongo.db[LIBRARY_COLLECTION].insert_one(item)

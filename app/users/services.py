@@ -1,6 +1,6 @@
 from app.extensions import mongo
 
-def create_user(username, number):
+def create_user(username, number, admin=False):
     # Check if user with this number already exists
     existing_number = mongo.db.users.find_one({"number": number})
     # Check if user with this username already exists
@@ -13,6 +13,6 @@ def create_user(username, number):
     if existing_username:
         return "username"
     from datetime import datetime, timezone
-    user = {"username": username, "number": number, "created_on": datetime.now(timezone.utc)}
+    user = {"username": username, "number": number, "admin": admin, "created_on": datetime.now(timezone.utc)}
     result = mongo.db.users.insert_one(user)
     return str(result.inserted_id) 
