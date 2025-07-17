@@ -50,6 +50,22 @@ def upload_file():
         user_id = request.form.get('user_id')
         if not user_id:
             return jsonify({"error": "Missing user_id"}), 400
+        file_type = request.form.get('type')
+        if not file_type:
+            # Infer type from MIME or extension
+            if file.content_type.startswith('image/'):
+                if file.content_type == 'image/gif' or file.filename.lower().endswith('.gif'):
+                    file_type = 'gif'
+                else:
+                    file_type = 'image'
+            else:
+                # Add more inference rules as needed
+                file_type = None
+        if not file_type:
+            return jsonify({"error": "Missing or undetectable type"}), 400
+        category = request.form.get('category')
+        if not category:
+            return jsonify({"error": "Missing category"}), 400
         filename = secure_filename(file.filename)
         try:
             s3.upload_fileobj(
@@ -63,11 +79,11 @@ def upload_file():
             return jsonify({"error": "Failed to upload file to S3", "details": str(e)}), 500
         file_url = f"https://{S3_BUCKET}.s3.{S3_REGION}.amazonaws.com/{filename}"
         try:
-            item_id = add_library_item(file_url, user_id)
+            item_id = add_library_item(file_url, user_id, file_type, category)
         except Exception as e:
             logging.exception("Failed to save library item to DB")
             return jsonify({"error": "Failed to save library item", "details": str(e)}), 500
-        return jsonify({"message": "File uploaded", "id": item_id, "url": file_url}), 201
+        return jsonify({"message": "File uploaded", "id": item_id, "url": file_url, "type": file_type, "category": category}), 201
     except Exception as e:
         logging.exception("Unexpected error in upload_file")
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
