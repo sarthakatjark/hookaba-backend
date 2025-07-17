@@ -17,15 +17,26 @@ S3_REGION = os.environ.get("S3_REGION", "us-east-1")
 
 s3 = boto3.client("s3")
 
-def compress_gif(file_stream, max_size=(64, 64), colors=64):
+def compress_gif(file_stream, max_size=(64, 64), colors=128, frame_skip=2):
     try:
         reader = imageio.get_reader(file_stream, format='gif')
+        meta = reader.get_meta_data()
         frames = []
-        for frame in reader:
+        durations = []
+        for i, frame in enumerate(reader):
+            if i % frame_skip != 0:
+                continue  # Skip frames to reduce total frame count
             im = Image.fromarray(frame)
-            im = im.convert('P', palette=Image.ADAPTIVE, colors=colors)
+            im = im.convert('RGB')  # Convert to RGB for better quantization
             im = im.resize(max_size, Image.Resampling.LANCZOS)
+            # Quantize to reduce colors, but keep more than 64 for better quality
+            im = im.quantize(colors=colors, method=Image.Quantize.FASTOCTREE)
             frames.append(im)
+            # Use per-frame duration if available, else fallback to meta
+            if isinstance(meta.get('duration'), list):
+                durations.append(meta['duration'][i])
+            else:
+                durations.append(meta.get('duration', 100))
         output = io.BytesIO()
         frames[0].save(
             output,
@@ -34,7 +45,7 @@ def compress_gif(file_stream, max_size=(64, 64), colors=64):
             append_images=frames[1:],
             optimize=True,
             loop=0,
-            duration=reader.get_meta_data().get('duration', 100)
+            duration=durations
         )
         output.seek(0)
         return output
